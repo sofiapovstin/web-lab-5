@@ -103,53 +103,72 @@ window.onload = function() {
     }
 };
 
+//Task 3
 // Function to calculate the maximum value from an array of numbers
-function calculateMaxNumbers() {
-    // Отримуємо значення з форми
-    var values = document.getElementById('three').querySelectorAll('input[type="number"]');
-    var numbers = Array.from(values).map(function(input) {
-        return parseInt(input.value);
-    });
+// Функція для збереження даних в cookies
+function saveToCookies(value) {
+    document.cookie = "maxCount=" + encodeURIComponent(value);
 
-    // Знаходимо максимальне значення
-    var maxNumber = Math.max(...numbers);
+}
 
-    // Знаходимо кількість максимальних значень
-    var countMaxNumbers = numbers.filter(function(number) {
-        return number === maxNumber;
-    }).length;
+// Функція для отримання даних з cookies
+function getFromCookies() {
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'maxCount') {
+            return parseInt(value) || 0;
+        }
+    }
+    return 0;
+}
 
-    // Зберігаємо результат в cookies
-    document.cookie = 'countMaxNumbers=' + countMaxNumbers;
+// Функція для перевірки та збереження кількості максимальних чисел
+function checkMaxNumbers() {
+    const numbers = [];
+    for (let i = 1; i <= 10; i++) {
+        const inputValue = parseInt(document.getElementById('number' + i).value);
+        if (!isNaN(inputValue)) {
+            numbers.push(inputValue);
+        }
+    }
 
-    // Виводимо результат за допомогою діалогового вікна
-    alert('Кількість максимальних чисел: ' + countMaxNumbers);
+    if (numbers.length > 0) {
+        const maxNumber = Math.max(...numbers);
+        const maxCount = numbers.filter(num => num === maxNumber).length;
 
-    // Перевірка, чи є дані в cookies при оновленні сторінки
-    var storedCountMaxNumbers = getCookie('countMaxNumbers');
+        saveToCookies(maxCount);
 
-    if (storedCountMaxNumbers !== "") {
-        var confirmDelete = confirm('Знайдено дані у cookies. Видалити дані?');
+        alert("Кількість максимальних чисел: " + maxCount);
+    } else {
+        alert("Будь ласка, введіть числа.");
+    }
+}
+
+function deleteAllCookies() {
+    var cookies = document.cookie.split(";");
+
+    for (var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i];
+        var eqPos = cookie.indexOf("=");
+        var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;";
+    }
+}
+// Функція для ініціалізації сторінки
+function initializePage() {
+    var savedMaxCount = getFromCookies();
+
+    if (savedMaxCount > 0) {
+        const confirmDelete = confirm("Інформація з cookies: Кількість максимальних чисел - " + savedMaxCount + "\nВидалити дані з cookies?");
 
         if (confirmDelete) {
-            // Видаляємо cookies
-            document.cookie = 'countMaxNumbers=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-            // Оновлюємо сторінку
-            location.reload();
+            deleteAllCookies();
         } else {
-            alert('Дані залишаться в cookies. Перезавантажте сторінку, щоб використовувати форму знову.');
+            alert("Дані з cookies залишаються. Перезавантажте сторінку для оновлення.");
         }
     }
 }
 
-// Функція для отримання значення з cookies за ім'ям
-function getCookie(name) {
-    var cookieArr = document.cookie.split(';');
-    for (var i = 0; i < cookieArr.length; i++) {
-        var cookiePair = cookieArr[i].split('=');
-        if (name === cookiePair[0].trim()) {
-            return decodeURIComponent(cookiePair[1]);
-        }
-    }
-    return "";
-}
+// Ініціалізація сторінки при завантаженні
+window.onload = initializePage;
